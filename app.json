@@ -1,0 +1,86 @@
+{
+  "expo": {
+    "name": "Lattice",
+    "slug": "lattice-pulse",
+    "scheme": "latticepulse",
+    "version": "3.5.2",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.latticenetwork.pulse",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Lattice usa il riconoscimento biometrico per sbloccare le tue conversazioni cifrate.",
+        "NSPhotoLibraryUsageDescription": "Lattice accede alle foto per allegarle in chat (cifrate end-to-end).",
+        "NSPhotoLibraryAddUsageDescription": "Lattice salva nella tua galleria le foto ricevute in chat."
+      }
+    },
+    "android": {
+      "package": "com.latticenetwork.pulse",
+      "versionCode": 182,
+      "edgeToEdgeEnabled": true,
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "backgroundColor": "#000000",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "android.permission.USE_BIOMETRIC",
+        "android.permission.USE_FINGERPRINT"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Lattice usa il riconoscimento biometrico per sbloccare le tue conversazioni cifrate."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#000000"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-monochrome.png",
+          "color": "#50C878",
+          "defaultChannel": "messages"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Lattice accede alle foto per allegarle in chat (cifrate end-to-end)."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Lattice accede alle foto per allegarle in chat.",
+          "savePhotosPermission": "Lattice salva nella tua galleria le foto ricevute in chat.",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4016478f-2eba-4f5e-8d8f-6d76a8bbc885"
+      }
+    },
+    "owner": "fabioastorino86"
+  }
+}

@@ -1,0 +1,107 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. SEGRETI — se una di queste righe salta, si pubblica una chiave.
+#    L'ordine non è casuale: prima i segreti, perché sono l'unico errore che
+#    non si corregge con un commit successivo.
+# ─────────────────────────────────────────────────────────────────────────────
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.pem
+*.key
+*.der
+*.cer
+*.crt
+keystore.properties
+key.properties
+signing.properties
+local.properties
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
+*serviceAccount*.json
+firebase-adminsdk*.json
+.env
+.env.*
+!.env.example
+secrets.json
+credentials.json
+*.jwt
+*.token
+vapid*.json
+*.mobileprovision
+lat.dev.key
+keyfile*.json
+*.keyfile.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. Build e artefatti
+# ─────────────────────────────────────────────────────────────────────────────
+build/
+android/build/
+android/app/build/
+android/.gradle/
+android/.cxx/
+android/captures/
+android/app/release/
+android/app/debug/
+.gradle/
+*.apk
+*.aab
+*.aar
+*.dex
+*.class
+*.hprof
+*.jsbundle
+index.android.bundle
+ios/build/
+ios/Pods/
+DerivedData/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. Dipendenze e cache
+# ─────────────────────────────────────────────────────────────────────────────
+node_modules/
+.expo/
+.expo-shared/
+.metro-health-check*
+.yarn/cache
+.yarn/install-state.gz
+.pnp.*
+*.tsbuildinfo
+.eslintcache
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. Copie di lavoro e rumore (questo repository non è la cartella di lavoro)
+# ─────────────────────────────────────────────────────────────────────────────
+*.bak
+*.bak-*
+*.orig
+*.save
+*.old
+*.rej
+*.tmp
+*~
+.bak-*/
+*.log
+npm-debug.log*
+yarn-error.log*
+.claude/
+AGENTS.md
+.easignore
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. Sistema e editor
+# ─────────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,156 @@
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ActivityIndicator, Alert, Modal, StyleSheet, RefreshControl, Share } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
+import * as api from "../lib/api";
+import { useI18n } from "../lib/i18n";
+import { theme } from "../theme";
+
+export default function HubScreen() {
+  const insets = useSafeAreaInsets();
+  const { t } = useI18n();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [compose, setCompose] = useState(false);
+  const [replyFor, setReplyFor] = useState(null);
+  const [replyText, setReplyText] = useState("");
+
+  const load = useCallback(() => {
+    api.hubFeed().then((d) => setPosts(Array.isArray(d) ? d : (d?.posts || []))).catch(() => {}).finally(() => setLoading(false));
+  }, []);
+  useEffect(() => { load(); const t = setInterval(load, 15000); return () => clearInterval(t); }, [load]);
+
+  const like = async (id) => { try { await api.hubLike(id); load(); } catch {} };
+  const del = async (id) => { Alert.alert("Elimina post", "Sei sicuro?", [{ text: "Annulla" }, { text: "Elimina", style: "destructive", onPress: async () => { try { await api.hubDelete(id); load(); } catch {} } }]); };
+  const sendReply = async (id) => { const t = replyText.trim(); if (!t) return; try { await api.hubReply(id, t); setReplyText(""); setReplyFor(null); load(); } catch (e) { Alert.alert("Errore", api.apiErr(e)); } };
+  const share = async (item) => {
+    const parts = [];
+    if (item.title) parts.push(item.title);
+    if (item.body) parts.push(item.body);
+    parts.push(`— ${item.author_name || item.author_lns || ""}${item.company_name ? " · " + item.company_name : ""}`);
+    parts.push("Condiviso da Lattice Hub · https://lattice-network.it");
+    try { await Share.share({ message: parts.filter(Boolean).join("\n\n") }); } catch {}
+  };
+
+  const renderItem = ({ item }) => (
+    <View style={s.card} testID="hub-post">
+      <View style={s.cardHead}>
+        <View style={{ flex: 1 }}>
+          <Text style={s.author}>{item.author_name || item.author_lns || "—"}</Text>
+          <Text style={s.company}>{item.company_name || "—"}{item.federated ? "  " + t("net") : ""}</Text>
+        </View>
+        {item.can_delete && <TouchableOpacity onPress={() => del(item.id)}><Text style={s.del}>🗑</Text></TouchableOpacity>}
+      </View>
+      {!!item.title && <Text style={s.title}>{item.title}</Text>}
+      {!!item.body && <Text style={s.body}>{item.body}</Text>}
+      {!!item.image && <Image source={{ uri: item.image }} style={s.postImg} resizeMode="cover" />}
+      <View style={s.actions}>
+        <TouchableOpacity onPress={() => like(item.id)} style={s.actBtn} testID="hub-like">
+          <Text style={[s.actText, item.liked && { color: "#ff5b7f" }]}>♥ {item.likes || 0}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => { setReplyFor(replyFor === item.id ? null : item.id); setReplyText(""); }} style={s.actBtn}>
+          <Text style={s.actText}>💬 {(item.replies?.length ?? item.reply_count ?? 0)}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => share(item)} style={s.actBtn} testID="hub-share">
+          <Text style={s.actText}>{t("hub.share")}</Text>
+        </TouchableOpacity>
+      </View>
+      {Array.isArray(item.replies) && item.replies.map((r, i) => (
+        <View key={i} style={s.reply}><Text style={s.replyAuthor}>{r.author_name || r.author_lns}: </Text><Text style={s.replyText}>{r.text}</Text></View>
+      ))}
+      {replyFor === item.id && (
+        <View style={s.replyBar}>
+          <TextInput value={replyText} onChangeText={setReplyText} placeholder={t("hub.reply.placeholder")} placeholderTextColor={theme.textFaint} style={s.replyInput} />
+          <TouchableOpacity onPress={() => sendReply(item.id)} style={s.replySend}><Text style={{ color: "#fff", fontWeight: "700" }}>{t("hub.send")}</Text></TouchableOpacity>
+        </View>
+      )}
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
+      <View style={[s.topBar, { paddingTop: insets.top + 12 }]}>
+        <Text style={s.h1}>{t("hub.title")}</Text>
+        <TouchableOpacity onPress={() => setCompose(true)} style={s.newBtn} testID="hub-new"><Text style={s.newText}>+ {t("hub.publish")}</Text></TouchableOpacity>
+      </View>
+      {loading ? <View style={s.center}><ActivityIndicator color={theme.primary} /></View> : (
+        <FlatList
+          data={posts}
+          keyExtractor={(p, i) => String(p.id || i)}
+          renderItem={renderItem}
+          contentContainerStyle={{ padding: 14, paddingBottom: 30 }}
+          refreshControl={<RefreshControl refreshing={false} onRefresh={load} tintColor={theme.primary} />}
+          ListEmptyComponent={<View style={s.center}><Text style={s.empty}>{t("hub.empty")}</Text></View>}
+        />
+      )}
+      <ComposeModal visible={compose} onClose={() => setCompose(false)} onDone={() => { setCompose(false); load(); }} />
+    </View>
+  );
+}
+
+function ComposeModal({ visible, onClose, onDone }) {
+  const { t, lang } = useI18n();
+  const [f, setF] = useState({ title: "", body: "", image: "" });
+  const [busy, setBusy] = useState(false);
+  const pick = async () => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return;
+    const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.5, base64: true });
+    if (!r.canceled && r.assets?.[0]?.base64) setF((x) => ({ ...x, image: `data:image/jpeg;base64,${r.assets[0].base64}` }));
+  };
+  const submit = async () => {
+    if (!f.body.trim() && !f.title.trim()) return;
+    setBusy(true);
+    try { await api.hubCreate(f); setF({ title: "", body: "", image: "" }); onDone(); }
+    catch (e) { Alert.alert("Errore", api.apiErr(e)); } finally { setBusy(false); }
+  };
+  return (
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+      <View style={s.modalWrap}>
+        <View style={s.modalCard}>
+          <Text style={s.modalTitle}>{t("hub.publish")}</Text>
+          <TextInput value={f.title} onChangeText={(v) => setF({ ...f, title: v })} placeholder={t("hub.compose")} placeholderTextColor={theme.textFaint} style={s.mInput} />
+          <TextInput value={f.body} onChangeText={(v) => setF({ ...f, body: v })} placeholder={t("hub.compose")} placeholderTextColor={theme.textFaint} style={[s.mInput, { height: 110, textAlignVertical: "top" }]} multiline />
+          {!!f.image && <Image source={{ uri: f.image }} style={{ height: 120, borderRadius: 8, marginTop: 8 }} resizeMode="cover" />}
+          <TouchableOpacity onPress={pick} style={s.imgBtn}><Text style={{ color: theme.primary, fontWeight: "600" }}>📷 {f.image ? (lang === "en" ? "Change image" : "Cambia immagine") : (lang === "en" ? "Add image" : "Aggiungi immagine")}</Text></TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+            <TouchableOpacity onPress={onClose} style={[s.mBtn, { backgroundColor: theme.surfaceAlt }]}><Text style={{ color: theme.textDim, fontWeight: "700" }}>{t("cancel")}</Text></TouchableOpacity>
+            <TouchableOpacity onPress={submit} disabled={busy} style={[s.mBtn, { backgroundColor: theme.primary }]}>{busy ? <ActivityIndicator color="#fff" /> : <Text style={{ color: "#fff", fontWeight: "700" }}>{t("hub.publish")}</Text>}</TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const s = StyleSheet.create({
+  topBar: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 18, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: theme.border, backgroundColor: theme.surface },
+  h1: { color: theme.text, fontSize: 22, fontWeight: "900" },
+  newBtn: { backgroundColor: theme.primary, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
+  newText: { color: "#fff", fontWeight: "700", fontSize: 13 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
+  empty: { color: theme.textDim, textAlign: "center" },
+  card: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, borderRadius: 14, padding: 14, marginBottom: 12 },
+  cardHead: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
+  author: { color: theme.text, fontWeight: "800", fontSize: 15 },
+  company: { color: "#50C878", fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginTop: 1 },
+  del: { fontSize: 16 },
+  title: { color: theme.text, fontWeight: "700", fontSize: 16, marginTop: 2 },
+  body: { color: theme.textDim, fontSize: 14, lineHeight: 20, marginTop: 4 },
+  postImg: { height: 180, borderRadius: 10, marginTop: 10 },
+  actions: { flexDirection: "row", gap: 20, marginTop: 12 },
+  actBtn: { paddingVertical: 2 },
+  actText: { color: theme.textDim, fontSize: 14, fontWeight: "600" },
+  reply: { flexDirection: "row", flexWrap: "wrap", marginTop: 8, paddingLeft: 8, borderLeftWidth: 2, borderLeftColor: theme.border },
+  replyAuthor: { color: theme.text, fontSize: 13, fontWeight: "700" },
+  replyText: { color: theme.textDim, fontSize: 13 },
+  replyBar: { flexDirection: "row", gap: 8, marginTop: 10 },
+  replyInput: { flex: 1, backgroundColor: theme.surfaceAlt, borderRadius: 18, color: theme.text, paddingHorizontal: 14, paddingVertical: 8, fontSize: 14 },
+  replySend: { backgroundColor: theme.primary, borderRadius: 18, paddingHorizontal: 16, justifyContent: "center" },
+  modalWrap: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-end" },
+  modalCard: { backgroundColor: theme.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 34 },
+  modalTitle: { color: theme.text, fontSize: 18, fontWeight: "800", marginBottom: 14 },
+  mInput: { backgroundColor: theme.surfaceAlt, borderWidth: 1, borderColor: theme.border, borderRadius: 10, color: theme.text, paddingHorizontal: 14, paddingVertical: 11, fontSize: 15, marginBottom: 8 },
+  imgBtn: { marginTop: 6, paddingVertical: 8 },
+  mBtn: { flex: 1, borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+});

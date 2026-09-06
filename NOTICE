@@ -1,0 +1,30 @@
+Lattice — client Android
+Copyright (c) 2026 Fabio Astorino. Tutti i diritti riservati.
+
+Questo prodotto è distribuito sotto Business Source License 1.1 (vedi LICENSE).
+Change Date: 2030-09-06 · Change License: GPL-3.0-or-later.
+
+I nomi "Lattice", "Lattice Network", "Lattice Pulse", "Nodo Sovrano", "LNS", il logo e
+l'identità visiva sono segni distintivi di Fabio Astorino e NON sono concessi in licenza
+con il codice (vedi TRADEMARK.md).
+
+Il software è fornito "COSÌ COM'È", senza garanzie di alcun tipo (vedi DISCLAIMER.md).
+
+--------------------------------------------------------------------------------
+Componenti di terze parti
+
+Questo software include o dipende da componenti di terze parti, ciascuno soggetto alla
+propria licenza. L'elenco completo, generato dalle dipendenze dichiarate, si ottiene con:
+
+    npx license-checker --production --summary
+
+Fra le principali:
+  - React Native, React (MIT)
+  - Expo e moduli Expo (MIT)
+  - @noble/post-quantum, @noble/hashes, @noble/ciphers (MIT) — Paul Miller
+  - react-native-webrtc (MIT)
+  - AndroidX / Android Jetpack (Apache-2.0) — Google LLC
+  - Kotlin standard library (Apache-2.0) — JetBrains
+
+Le licenze dei componenti di terze parti prevalgono, per quei componenti, sulle condizioni
+di LICENSE.
