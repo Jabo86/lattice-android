@@ -92,8 +92,8 @@ android {
         applicationId 'com.latticenetwork.pulse'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 182
-        versionName "3.5.2"
+        versionCode 183
+        versionName "3.5.3"
 
         // Solo arm64-v8a: copre tutti gli smartphone moderni e riduce l'APK da ~137MB a ~50MB
         // (download mobile affidabile). x86/x86_64 servono solo agli emulatori.

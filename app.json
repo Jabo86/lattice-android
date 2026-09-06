@@ -3,7 +3,7 @@
     "name": "Lattice",
     "slug": "lattice-pulse",
     "scheme": "latticepulse",
-    "version": "3.5.2",
+    "version": "3.5.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -19,7 +19,7 @@
     },
     "android": {
       "package": "com.latticenetwork.pulse",
-      "versionCode": 182,
+      "versionCode": 183,
       "edgeToEdgeEnabled": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
