@@ -23,6 +23,7 @@ rete non è in JavaScript, e la percentuale da sola lo farebbe credere.
 |---|---|---|
 | Client Android (interfaccia, crittografia lato dispositivo) | JavaScript / React Native + **Kotlin** | **questo repository** |
 | Backend, nodi, consenso, ledger, federazione | **Rust** (~20.000 righe, 49 moduli, Axum) | non pubblicato — si installa come immagine firmata, verificata per digest |
+| Primitive crittografiche del nodo (ML-DSA-65, AES-256-GCM, quorum QBFT) | **Rust** | **pubblicate e provabili**: <https://github.com/Jabo86/lattice-crypto> (`cargo test`, 28 prove) |
 | Validatori QBFT (10 nodi, quorum 7, firme ML-DSA-65) | **Rust** | non pubblicato |
 | Tunnel di resistenza alla censura (XTLS-Reality) | **Go** (libXray, compilato con gomobile) | `third_party/libxray` |
 | Sito e console | JavaScript / React | non pubblicato |
