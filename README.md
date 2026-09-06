@@ -13,6 +13,38 @@ pubblicato**. La sicurezza che si deve credere sulla parola non è sicurezza.
 
 ---
 
+## Com'è fatta la rete (e perché qui GitHub scrive "JavaScript")
+
+La barra dei linguaggi descrive **questo repository**, che contiene **solo il client
+Android**: interfaccia in React Native (JavaScript) e moduli nativi in Kotlin. Il resto della
+rete non è in JavaScript, e la percentuale da sola lo farebbe credere.
+
+| Parte | Linguaggio | Dov'è |
+|---|---|---|
+| Client Android (interfaccia, crittografia lato dispositivo) | JavaScript / React Native + **Kotlin** | **questo repository** |
+| Backend, nodi, consenso, ledger, federazione | **Rust** (~20.000 righe, 49 moduli, Axum) | non pubblicato — si installa come immagine firmata, verificata per digest |
+| Validatori QBFT (10 nodi, quorum 7, firme ML-DSA-65) | **Rust** | non pubblicato |
+| Tunnel di resistenza alla censura (XTLS-Reality) | **Go** (libXray, compilato con gomobile) | `third_party/libxray` |
+| Sito e console | JavaScript / React | non pubblicato |
+
+Il Rust è la parte che **non deve essere clonata**: è il motivo per cui il nodo si distribuisce
+come immagine firmata e non come sorgente (<https://lattice-network.it/guida-nodo>). Non
+essendo pubblicato, resta però verificabile nei suoi punti che contano:
+
+- la matematica del consenso è **dimostrata e ricontrollata a macchina**:
+  <https://lattice-network.it/prova-qbft>
+- ogni blocco porta 7 firme ML-DSA-65 di 10 validatori distinti, e chiunque può leggerle:
+  <https://lattice-network.it/api/qbft/status> · <https://lattice-network.it/explorer>
+- gli audit e i difetti trovati sono pubblici, compresi i nostri:
+  <https://lattice-network.it/audit/red-team>
+
+La crittografia che protegge i tuoi messaggi gira **sul dispositivo**, quindi sta in questo
+repository: ML-KEM-768 e ML-DSA-65 (`@noble/post-quantum`), il ratchet, la derivazione del PIN,
+il doppio fondo. Il server, in Rust, non vede i contenuti: è la ragione per cui il codice che
+conta per la tua riservatezza è proprio quello che puoi leggere qui.
+
+---
+
 ## Licenza in tre righe
 
 Il codice è **aperto e verificabile, non open source** — e lo scriviamo con precisione
