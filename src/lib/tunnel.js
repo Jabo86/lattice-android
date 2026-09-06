@@ -12,10 +12,17 @@ import { DEFAULT_SERVER } from "../config";
 
 const KEY = "lat.darkmesh.v1";
 const LAST = "lat.darkmesh.last"; // ultimo vestito che ha funzionato: si riprova per primo
+const LASTSRV = "lat.darkmesh.lastsrv"; // ultimo indirizzo che ha funzionato (IP o dominio)
 const M = NativeModules.RealityTunnel;
 const SOCKS_PORT = 10808;
 
-const SERVER = "167.233.85.189";
+// DUE INDIRIZZI PER LO STESSO SERVER, provati in ordine:
+//  1. l'IP, che non ha bisogno del DNS — e il DNS e' la prima cosa che viene manomessa
+//     proprio sulle reti dove un tunnel serve;
+//  2. il dominio, che resta valido anche se la macchina cambia indirizzo.
+// Si ricorda quale ha funzionato e la volta dopo si parte da quello.
+const HOST = DEFAULT_SERVER.replace(/^https?:\/\//, "").replace(/[/:].*$/, "");
+const SERVERS = ["167.233.85.189", HOST];
 const UUID = "0f75e5ec-2c99-4ba6-b9d7-c3dcd27333cc";
 const PBK = "L-9cuAvkkYo7l3aB5RUZSdDDLY6iCXktrqne-itAc2o";
 const SID = "f69fec0ed8358a2c";
@@ -27,7 +34,7 @@ export const OUTFITS = [
   { id: "microsoft", port: 8443, sni: "www.microsoft.com" },
 ];
 
-export function buildConfig(outfit) {
+export function buildConfig(outfit, server = SERVERS[0]) {
   return JSON.stringify({
     log: { loglevel: "warning" },
     inbounds: [
@@ -36,7 +43,7 @@ export function buildConfig(outfit) {
     outbounds: [
       {
         protocol: "vless", tag: "proxy",
-        settings: { vnext: [{ address: SERVER, port: outfit.port, users: [{ id: UUID, encryption: "none", flow: "xtls-rprx-vision" }] }] },
+        settings: { vnext: [{ address: server, port: outfit.port, users: [{ id: UUID, encryption: "none", flow: "xtls-rprx-vision" }] }] },
         streamSettings: {
           network: "tcp", security: "reality",
           realitySettings: { serverName: outfit.sni, fingerprint: "chrome", publicKey: PBK, shortId: SID },
@@ -62,6 +69,14 @@ async function tunnelWorks(timeoutMs = 9000) {
   } catch { return false; } finally { clearTimeout(t); }
 }
 
+// Ordina gli indirizzi mettendo per primo l'ultimo che aveva funzionato.
+async function orderedServers() {
+  let last = null;
+  try { last = await AsyncStorage.getItem(LASTSRV); } catch { /* niente */ }
+  if (!last || !SERVERS.includes(last)) return SERVERS;
+  return [last].concat(SERVERS.filter((x) => x !== last));
+}
+
 // Ordina i vestiti mettendo per primo l'ultimo che aveva funzionato.
 async function ordered() {
   let last = null;
@@ -76,16 +91,22 @@ async function ordered() {
 export async function start() {
   if (!M) throw new Error("Modulo tunnel non disponibile in questa versione.");
   const list = await ordered();
+  const servers = await orderedServers();
   let lastErr = null;
   for (const o of list) {
-    try {
-      await M.stop().catch(() => {});
-      await M.start(buildConfig(o));
-      if (await tunnelWorks()) {
-        try { await AsyncStorage.setItem(LAST, o.id); } catch { /* niente */ }
-        return o.id;
-      }
-    } catch (e) { lastErr = e; }
+    for (const srv of servers) {
+      try {
+        await M.stop().catch(() => {});
+        await M.start(buildConfig(o, srv));
+        if (await tunnelWorks()) {
+          try {
+            await AsyncStorage.setItem(LAST, o.id);
+            await AsyncStorage.setItem(LASTSRV, srv);
+          } catch { /* niente */ }
+          return o.id;
+        }
+      } catch (e) { lastErr = e; }
+    }
   }
   await M.stop().catch(() => {});
   throw lastErr || new Error("Nessun vestito ha funzionato su questa rete.");
