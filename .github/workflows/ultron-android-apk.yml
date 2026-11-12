@@ -21,9 +21,9 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.26.0'
-      - uses: android-actions/setup-android@v3
       - name: Android tools and NDK
         run: |
+          echo "ANDROID_HOME=${ANDROID_HOME:-/usr/local/lib/android/sdk}" >> "$GITHUB_ENV"
           yes | sdkmanager --licenses >/dev/null || true
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.1.12297006" >> "$GITHUB_ENV"
