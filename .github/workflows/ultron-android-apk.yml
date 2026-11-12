@@ -27,7 +27,9 @@ jobs:
       - name: Export NDK path
         run: echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.1.12297006" >> "$GITHUB_ENV"
       - name: Install JS dependencies
-        run: npm install --legacy-peer-deps --no-audit --no-fund
+        run: |
+          npm ci --legacy-peer-deps --no-fund
+          npm audit --audit-level=low
       - name: Verify proprietary notification routing
         run: node tools/verify-ultron-notifications.cjs
       - name: Build native Xray AAR from checked-in source
