@@ -1,0 +1,23 @@
+name: ULTRON server reachability (non-destructive)
+on:
+  push:
+    branches: [ultron/android-migration]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Inspect HTTPS and wake API without secrets
+        shell: bash
+        run: |
+          set +e
+          echo 'Checking HTTPS certificate validation (without insecure bypass)'
+          curl --silent --show-error --max-time 12 --output /dev/null --write-out 'health HTTP %{http_code}; TLS verify %{ssl_verify_result}; remote %{remote_ip}\n' https://49.12.242.0/api/health
+          echo "health curl exit: $?"
+          echo 'Checking whether wake route is accessible (invalid RID, no account secrets)'
+          curl --silent --show-error --max-time 12 --output /dev/null --write-out 'wake HTTP %{http_code}; TLS verify %{ssl_verify_result}; remote %{remote_ip}\n' 'https://49.12.242.0/api/public/wake/poll?rid=00000000000000000000000000000000&wait=0'
+          echo "wake curl exit: $?"
+          echo 'These checks do not establish valid authenticated registration or real notification delivery.'
