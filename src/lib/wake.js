@@ -18,7 +18,7 @@ export async function isOn() {
 }
 
 async function writeConfig(on, rid) {
-  const base = String((await loadServer()) || DEFAULT_SERVER).replace(/\/+$/, "");
+  const base = DEFAULT_SERVER.replace(/\/+$/, "");
   // Il rumore in background (letto dal WakeService nativo) è acceso di default.
   const chaff = (await AsyncStorage.getItem("lat.chaff.v1")) !== "0";
   await FileSystem.writeAsStringAsync(FILE, JSON.stringify({ on: !!on, rid: rid || "", base, chaff }));
