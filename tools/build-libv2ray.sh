@@ -14,7 +14,7 @@ SRC="${1:-/opt/apkbuild/third_party/libxray}"
 OUT="${2:-/opt/apkbuild/android/app/libs/libv2ray.aar}"
 XMOBILE=v0.0.0-20260709172247-6129f5bee9d5
 
-export GOROOT="${GOROOT:-/usr/local/go}"
+export GOROOT="${GOROOT:-$(go env GOROOT)}"
 export GOBIN="${GOBIN:-$(go env GOPATH 2>/dev/null || echo /root/go)/bin}"
 export PATH="$GOROOT/bin:$GOBIN:/root/go/bin:$PATH"
 export ANDROID_HOME="${ANDROID_HOME:-/opt/android-sdk}"
