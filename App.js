@@ -4,8 +4,6 @@ import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
 import * as Notifications from "expo-notifications";
 import notifee, { EventType } from "react-native-notify-kit";
-import { getApp as fbApp } from "@react-native-firebase/app";
-import { getMessaging as fbMessaging, getInitialNotification as fbGetInitial, onNotificationOpenedApp as fbOnOpened, onMessage as fbOnMessage } from "@react-native-firebase/messaging";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { NavigationContainer, DarkTheme, createNavigationContainerRef } from "@react-navigation/native";
@@ -188,27 +186,23 @@ function Root() {
   }, [user, consent]);
   const userRef = useRef(null);
   useEffect(() => { userRef.current = user; }, [user]);
-  // Registra il token push a OGNI avvio (e quando cambia identità): prima dipendeva
-  // solo dall'interruttore in Impostazioni, così i device che non lo avevano mai
-  // toccato non ricevevano nessuna notifica.
+  // ULTRON: solo permessi notifiche locali e connessione diretta WakeService.
   useEffect(() => {
     if (!user?.lns) return;
     const register = async () => {
-      try {
-        const tok = await registerForPush();
-        if (tok) await api.registerPushToken(tok, Platform.OS);
-      } catch {}
+      try { await registerForPush(); await wake.enable(); } catch (_) {}
     };
     register();
-    // Ri-registra quando l'app torna in primo piano: il token FCM può cambiare.
-    const sub = RNAppState.addEventListener("change", (st) => { if (st === "active") register(); });
-    return () => { try { sub.remove(); } catch {} };
+    const sub = RNAppState.addEventListener("change", (st) => {
+      if (st === "active") register();
+    });
+    return () => { try { sub.remove(); } catch (_) {} };
   }, [user?.lns]);
   const pendingNotif = useRef(null);
   const routeFromData = (data) => {
     if (!data) return null;
     if (data.type === "lead") return { name: "Leads", params: { focusId: data.lead_id || null } };
-    // I dati della push FCM sono stringhe: "false" sarebbe truthy con !!.
+    // I dati della push server ULTRON sono stringhe: "false" sarebbe truthy con !!.
     const flag = (v) => v === true || v === "true" || v === "1";
     if (data.type === "call") return { name: "Call", params: { incoming: true, fromPush: true, from: data.from, video: flag(data.video), call_id: data.call_id, autoAnswer: flag(data.autoAnswer), decline: flag(data.decline) } };
     if (data.type === "gcall") return { name: "GroupCall", params: { room_id: data.room_id, video: flag(data.video), chan_name: null } };
@@ -275,23 +269,6 @@ function Root() {
       } catch (e) {}
     });
     return () => { mounted = false; try { unsub && unsub(); } catch (e) {} };
-  }, [handleNotif]);
-  // Notifiche MESSAGGIO via RNFirebase (ora proprietario FCM dopo rimozione servizio Expo):
-  // ripristina apertura chat al tap (cold start + background) e aggiorna la lista non letti.
-  useEffect(() => {
-    let m;
-    try { m = fbMessaging(fbApp()); } catch (e) { return; }
-    fbGetInitial(m).then((rm) => { if (rm && rm.data) handleNotif(rm.data); }).catch(() => {});
-    const unsubOpen = fbOnOpened(m, (rm) => { if (rm && rm.data) handleNotif(rm.data); });
-    // APP APERTA: la push data-only della chiamata arriva qui in tempo reale → apriamo
-    // subito la schermata di squillo, senza attendere il polling del rendezvous.
-    const unsubMsg = fbOnMessage(m, (rm) => {
-      const d = (rm && rm.data) || {};
-      if (d.type !== "call" || !d.call_id) return;
-      handleNotif(d);
-      try { api.callRingShown(d.call_id).catch(() => {}); } catch (e) {}
-    });
-    return () => { try { unsubOpen && unsubOpen(); } catch (e) {} try { unsubMsg && unsubMsg(); } catch (e) {} };
   }, [handleNotif]);
   useEffect(() => { flushNotif(); }, [user, flushNotif]);
   // Dopo lo sblocco col PIN il container si rimonta: ritenta l'apertura della chat pendente.
