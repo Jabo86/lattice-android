@@ -19,6 +19,7 @@ export const OWNER_LNS = OWNER_LNS_LIST[0];
 // chiamando, e da quale indirizzo. Il media passa dal nostro relay, quindi i due
 // interlocutori non vedono mai l'IP l'uno dell'altro.
 // Configurare TURN ULTRON con credenziali temporanee emesse dal server; nessuna credenziale statica.
+// Non usare credenziali TURN statiche nel client. Configurare TURN ULTRON con credenziali temporanee.
 export const ICE_SERVERS = [{ urls: "stun:49.12.242.0:3478" }];
 
 // "relay" = tutto il media passa dal nostro relay: nessuno dei due conosce l'IP dell'altro.
