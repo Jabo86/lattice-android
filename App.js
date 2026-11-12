@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { View, ActivityIndicator, AppState as RNAppState, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import * as Notifications from "expo-notifications";
 import notifee, { EventType } from "react-native-notify-kit";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardProvider } from "react-native-keyboard-controller";
@@ -190,7 +189,7 @@ function Root() {
   useEffect(() => {
     if (!user?.lns) return;
     const register = async () => {
-      try { await registerForPush(); await wake.enable(); } catch (_) {}
+      try { const ok = await registerForPush(); if (ok) await wake.enable(); } catch (_) {}
     };
     register();
     const sub = RNAppState.addEventListener("change", (st) => {
@@ -235,15 +234,6 @@ function Root() {
     let tries = 0;
     const iv = setInterval(() => { tries++; flushNotif(); if (!pendingNotif.current || tries > 25) clearInterval(iv); }, 400);
   }, [flushNotif]);
-  useEffect(() => {
-    const sub = Notifications.addNotificationResponseReceivedListener((resp) => {
-      handleNotif(resp?.notification?.request?.content?.data || {});
-    });
-    Notifications.getLastNotificationResponseAsync().then((resp) => {
-      if (resp) handleNotif(resp?.notification?.request?.content?.data || {});
-    }).catch(() => {});
-    return () => sub.remove();
-  }, [handleNotif]);
   // Routing dalla notifica full-screen chiamata (notify-kit): cold start + press in foreground.
   useEffect(() => {
     let mounted = true;
@@ -251,7 +241,7 @@ function Root() {
       try {
         const initial = await notifee.getInitialNotification();
         const d = initial && initial.notification && initial.notification.data;
-        if (mounted && d && d.type === "call") {
+        if (mounted && d) {
           const aid = initial.pressAction && initial.pressAction.id;
           handleNotif({ ...d, autoAnswer: aid === "answer" ? "1" : "", decline: aid === "reject" ? "1" : "" });
           try { await notifee.cancelNotification(initial.notification.id); } catch (e2) {}
@@ -261,7 +251,7 @@ function Root() {
     const unsub = notifee.onForegroundEvent(({ type, detail }) => {
       try {
         const d = detail && detail.notification && detail.notification.data;
-        if ((type === EventType.PRESS || type === EventType.ACTION_PRESS) && d && d.type === "call") {
+        if ((type === EventType.PRESS || type === EventType.ACTION_PRESS) && d) {
           const aid = detail.pressAction && detail.pressAction.id;
           handleNotif({ ...d, autoAnswer: aid === "answer" ? "1" : "", decline: aid === "reject" ? "1" : "" });
           if (detail.notification.id) notifee.cancelNotification(detail.notification.id).catch(() => {});
