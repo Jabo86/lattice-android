@@ -29,6 +29,7 @@ jobs:
           npm audit fix --package-lock-only --legacy-peer-deps --no-fund --no-audit || true
           npm audit --json --package-lock-only > audit-after.json || true
           node -e 'let j=require("./audit-after.json"); console.log("AFTER", JSON.stringify(j.metadata?.vulnerabilities)); console.log("REMAINING", Object.entries(j.vulnerabilities||{}).map(([k,v])=>k+":"+v.severity+":"+JSON.stringify(v.fixAvailable)).join("\n"));'
+          node -e 'let j=require("./audit-after.json"); for (let [k,v] of Object.entries(j.vulnerabilities||{})) console.log("DETAIL", JSON.stringify({name:k,severity:v.severity,range:v.range,via:v.via,effects:v.effects,nodes:v.nodes,fixAvailable:v.fixAvailable}));'
           git diff --stat
       - name: Keep one authoritative npm lockfile (ULTRON branch only)
         run: |
