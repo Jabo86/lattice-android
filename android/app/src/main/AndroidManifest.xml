@@ -42,14 +42,14 @@
       <data android:scheme="https"/>
     </intent>
   </queries>
-  <application android:name=".MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false" android:requestLegacyExternalStorage="true" android:fullBackupContent="@xml/secure_store_backup_rules" android:dataExtractionRules="@xml/secure_store_data_extraction_rules">
+  <application android:name="com.latticenetwork.pulse.MainApplication" android:label="@string/app_name" android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" android:allowBackup="true" android:theme="@style/AppTheme" android:supportsRtl="true" android:enableOnBackInvokedCallback="false" android:requestLegacyExternalStorage="true" android:fullBackupContent="@xml/secure_store_backup_rules" android:dataExtractionRules="@xml/secure_store_data_extraction_rules">
     <meta-data android:name="expo.modules.notifications.default_notification_color" android:resource="@color/notification_icon_color"/>
     <meta-data android:name="expo.modules.notifications.default_notification_icon" android:resource="@drawable/notification_icon"/>
     <meta-data android:name="expo.modules.updates.ENABLED" android:value="false"/>
     <meta-data android:name="expo.modules.updates.ENABLE_BSDIFF_PATCH_SUPPORT" android:value="true"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_CHECK_ON_LAUNCH" android:value="ALWAYS"/>
     <meta-data android:name="expo.modules.updates.EXPO_UPDATES_LAUNCH_WAIT_MS" android:value="0"/>
-    <activity android:name=".MainActivity" android:showWhenLocked="true" android:turnScreenOn="true" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|smallestScreenSize|assetsPaths" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
+    <activity android:name="com.latticenetwork.pulse.MainActivity" android:showWhenLocked="true" android:turnScreenOn="true" android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode|smallestScreenSize|assetsPaths" android:launchMode="singleTask" android:windowSoftInputMode="adjustResize" android:theme="@style/Theme.App.SplashScreen" android:exported="true" android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
@@ -64,40 +64,40 @@
     <!-- ASPETTO DISCRETO (v1.5.0): icone e nomi alternativi mostrati dalla home. Sono
          spenti di serie; l'utente ne accende uno da Impostazioni e il modulo nativo
          AppDisguise spegne gli altri. Il nome vero resta in Impostazioni Android → App. -->
-    <activity-alias android:name=".AliasCalc" android:targetActivity=".MainActivity" android:label="Calcolatrice" android:icon="@mipmap/ic_calc" android:roundIcon="@mipmap/ic_calc" android:enabled="false" android:exported="true">
+    <activity-alias android:name=".AliasCalc" android:targetActivity="com.latticenetwork.pulse.MainActivity" android:label="Calcolatrice" android:icon="@mipmap/ic_calc" android:roundIcon="@mipmap/ic_calc" android:enabled="false" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity-alias>
-    <activity-alias android:name=".AliasNotes" android:targetActivity=".MainActivity" android:label="Note" android:icon="@mipmap/ic_notes" android:roundIcon="@mipmap/ic_notes" android:enabled="false" android:exported="true">
+    <activity-alias android:name=".AliasNotes" android:targetActivity="com.latticenetwork.pulse.MainActivity" android:label="Note" android:icon="@mipmap/ic_notes" android:roundIcon="@mipmap/ic_notes" android:enabled="false" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity-alias>
-    <activity-alias android:name=".AliasWeather" android:targetActivity=".MainActivity" android:label="Meteo" android:icon="@mipmap/ic_weather" android:roundIcon="@mipmap/ic_weather" android:enabled="false" android:exported="true">
+    <activity-alias android:name=".AliasWeather" android:targetActivity="com.latticenetwork.pulse.MainActivity" android:label="Meteo" android:icon="@mipmap/ic_weather" android:roundIcon="@mipmap/ic_weather" android:enabled="false" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity-alias>
-    <activity-alias android:name=".AliasClock" android:targetActivity=".MainActivity" android:label="Orologio" android:icon="@mipmap/ic_clock" android:roundIcon="@mipmap/ic_clock" android:enabled="false" android:exported="true">
+    <activity-alias android:name=".AliasClock" android:targetActivity="com.latticenetwork.pulse.MainActivity" android:label="Orologio" android:icon="@mipmap/ic_clock" android:roundIcon="@mipmap/ic_clock" android:enabled="false" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity-alias>
-    <service android:name=".WakeService" android:exported="false" android:foregroundServiceType="dataSync"/>
-    <service android:name=".LatticeConnectionService" android:exported="true"
+    <service android:name="com.latticenetwork.pulse.WakeService" android:exported="false" android:foregroundServiceType="dataSync"/>
+    <service android:name="com.latticenetwork.pulse.LatticeConnectionService" android:exported="true"
       android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE">
       <intent-filter>
         <action android:name="android.telecom.ConnectionService"/>
       </intent-filter>
     </service>
     <!-- Motore mesh in un PROCESSO SEPARATO: la radio non tocca il thread dell'interfaccia. -->
-    <service android:name=".MeshService" android:exported="false" android:process=":mesh" android:foregroundServiceType="dataSync"/>
-    <receiver android:name=".BootReceiver" android:exported="true" android:enabled="true">
+    <service android:name="com.latticenetwork.pulse.MeshService" android:exported="false" android:process=":mesh" android:foregroundServiceType="dataSync"/>
+    <receiver android:name="com.latticenetwork.pulse.BootReceiver" android:exported="true" android:enabled="true">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED"/>
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
