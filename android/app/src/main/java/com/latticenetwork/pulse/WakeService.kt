@@ -15,7 +15,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * SVEGLIA SENZA GOOGLE.
+ * Notifiche del nodo ULTRON, senza push di terze parti.
  * Tiene aperta una connessione in attesa verso il server Lattice (long-poll) e mostra una
  * notifica locale quando ci sono messaggi. Non conosce chiavi, non decifra nulla: sa solo
  * che "c'è posta". Il contenuto lo legge l'app, dopo lo sblocco.
