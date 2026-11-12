@@ -142,8 +142,8 @@ export default function SignupScreen({ navigation }) {
           <Text style={styles.noteTitle}>{it ? "Registri un'azienda?" : "Registering a company?"}</Text>
           <Text style={styles.noteTxt}>
             {it
-              ? "Un'organizzazione non si appoggia al nostro server: apre il PROPRIO nodo sui propri server, e da lì crea le identità dei colleghi. Il nodo si installa con un comando (lattice-network.it/install) e database, chiavi e messaggi restano sul vostro hardware. Dati aziendali su un'infrastruttura che l'azienda non controlla non sono sovranità."
-              : "An organisation does not rely on our server: it opens its OWN node on its own servers, and creates colleagues' identities from there. The node installs with one command (lattice-network.it/install) and database, keys and messages stay on your hardware. Company data on infrastructure the company does not control is not sovereignty."}
+              ? "Un'organizzazione non si appoggia al nostro server: apre il PROPRIO nodo sui propri server, e da lì crea le identità dei colleghi. Il nodo si installa con un comando (49.12.242.0) e database, chiavi e messaggi restano sul vostro hardware. Dati aziendali su un'infrastruttura che l'azienda non controlla non sono sovranità."
+              : "An organisation does not rely on our server: it opens its OWN node on its own servers, and creates colleagues' identities from there. The node installs with one command (49.12.242.0) and database, keys and messages stay on your hardware. Company data on infrastructure the company does not control is not sovereignty."}
           </Text>
           <Text style={styles.noteTxt}>
             {it
