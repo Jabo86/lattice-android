@@ -245,7 +245,7 @@ export default function SettingsScreen({ navigation }) {
   useEffect(() => { wake.isOn().then((v) => setWakeOn(!!v)).catch(() => {}); }, []);
 
   // Notifiche dal nostro server: il servizio nativo tiene aperta una connessione in attesa
-  // senza dipendere da Google o Firebase.
+  // usando soltanto il servizio nativo e il nodo ULTRON.
   const toggleWake = async (v) => {
     setWakeBusy(true);
     try {
