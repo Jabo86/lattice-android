@@ -1,11 +1,10 @@
-// SVEGLIA SENZA GOOGLE (lato app).
+// ULTRON: sveglia tramite connessione diretta al proprio nodo.
 // Scrive la configurazione in files/wake.json: il servizio nativo (WakeService.kt) la legge
 // e tiene aperta una connessione in attesa verso il nostro server. Il gettone (rid) è
 // casuale e non contiene la tua identità; il servizio non ha bisogno della chiave privata.
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system/legacy";
 import { randomHex } from "./crypto";
-import { loadServer } from "./store";
 import { DEFAULT_SERVER } from "../config";
 import * as api from "./api";
 
