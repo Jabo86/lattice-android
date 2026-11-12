@@ -76,7 +76,6 @@ export default function NotificationsScreen({ navigation }) {
                testRes.wake?.alive
                  ? (en ? "listening now" : "in ascolto adesso")
                  : (en ? "not listening" : "non in ascolto")],
-              ["Firebase", (testRes.firebase?.tokens ?? 0) + (en ? " token(s) · " : " gettoni · ") + (testRes.firebase?.ms ?? 0) + " ms"],
               [en ? "Browser" : "Browser", (testRes.browser?.sent ?? 0) + "/" + (testRes.browser?.subs ?? 0) + " · " + (testRes.browser?.ms ?? 0) + " ms"],
               [en ? "Total" : "Totale", (testRes.total_ms ?? 0) + " ms"]].map(([k, v]) => (
               <View key={k} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 6 }}>
@@ -87,7 +86,7 @@ export default function NotificationsScreen({ navigation }) {
             <Text style={{ color: theme.textDim, fontSize: 12, marginTop: 8, lineHeight: 17 }}>
               {en
                 ? "If the alert does not appear on screen, Lattice does not have permission to show notifications: check it in the Android settings."
-                : "Se l'avviso non compare a schermo, Lattice non ha il permesso di mostrare notifiche: controllalo nelle impostazioni di Android."}
+                : "Se l'avviso non compare a schermo, ULTRON non ha il permesso di mostrare notifiche: controllalo nelle impostazioni di Android."}
             </Text>
           </View>
         )}
