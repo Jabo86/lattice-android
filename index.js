@@ -44,8 +44,7 @@ step("global-handler", () => {
 });
 
 // ── Chiamata in arrivo: notifica FULL-SCREEN (schermo bloccato) ──
-// Il push chiamate è DATA-ONLY: RNFirebase lo consegna anche ad app chiusa/uccisa e
-// noi mostriamo una notifica full-screen (come una vera telefonata).
+// Gli eventi di chiamata arrivano dal nodo ULTRON; non esiste alcuna dipendenza FCM.
 async function showIncomingCall(notifee, K, data) {
   try {
     const isVideo = data.video === true || data.video === "true" || data.video === "1";
