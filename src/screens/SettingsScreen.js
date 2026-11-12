@@ -387,7 +387,7 @@ export default function SettingsScreen({ navigation }) {
     if (v) { try { const ok = await registerForPush(); if (ok) await wake.enable(); setPushOk(!!ok); } catch { setPushOk(false); } } else { await wake.disable(); setWakeOn(false); setPushOk(false); }
   };
 
-  // Stato reale delle notifiche su QUESTO dispositivo: permesso concesso + token registrato.
+  // Stato reale delle notifiche su QUESTO dispositivo: permesso concesso + servizio locale attivo.
   const checkPush = async () => {
     setPushBusy(true);
     try {
