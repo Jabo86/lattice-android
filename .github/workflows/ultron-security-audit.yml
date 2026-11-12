@@ -1,0 +1,40 @@
+name: ULTRON dependency security audit
+on:
+  push:
+    branches: [ultron/android-migration]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - '.github/workflows/ultron-security-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit lockfile currently tracked by GitHub
+        run: |
+          npm audit --json --package-lock-only > audit-before.json || true
+          node -e 'let j=require("./audit-before.json"); console.log("BEFORE", JSON.stringify(j.metadata?.vulnerabilities)); console.log("ISSUES", Object.entries(j.vulnerabilities||{}).map(([k,v])=>k+":"+v.severity+":"+JSON.stringify(v.fixAvailable)).join("\n"));'
+      - name: Reconcile dependencies and apply nonbreaking security updates
+        run: |
+          npm install --package-lock-only --legacy-peer-deps --no-audit --no-fund
+          npm audit fix --package-lock-only --legacy-peer-deps --no-fund --no-audit || true
+          npm audit --json --package-lock-only > audit-after.json || true
+          node -e 'let j=require("./audit-after.json"); console.log("AFTER", JSON.stringify(j.metadata?.vulnerabilities)); console.log("REMAINING", Object.entries(j.vulnerabilities||{}).map(([k,v])=>k+":"+v.severity+":"+JSON.stringify(v.fixAvailable)).join("\n"));'
+          git diff --stat
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ULTRON-security-audit-and-lockfile
+          path: |
+            audit-before.json
+            audit-after.json
+            package-lock.json
+          if-no-files-found: error
