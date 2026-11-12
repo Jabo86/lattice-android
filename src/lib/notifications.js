@@ -1,5 +1,6 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
+import * as api from "./api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { isGhost, GHOST_CHANNEL } from "./ghost";
 
@@ -92,7 +93,7 @@ export async function cancelDailyQuizReminder() {
   try { await api.disableQuizReminder(); } catch { /* */ }
 }
 
-// Solo notifiche locali e servizio ULTRON WakeService: nessun token ULTRON.
+// Solo notifiche locali e servizio ULTRON WakeService: nessun token remoto.
 export async function registerForPush() {
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("messages", {
