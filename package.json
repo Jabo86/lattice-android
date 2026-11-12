@@ -70,6 +70,7 @@
   "overrides": {
     "glob": "14.0.5",
     "minimatch": "11.0.8",
-    "image-size": "2.1.0"
+    "image-size": "2.1.0",
+    "@grpc/grpc-js": "1.13.7"
   }
 }
