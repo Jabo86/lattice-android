@@ -14,7 +14,7 @@ const files = [
   "android/app/src/main/AndroidManifest.xml"
 ];
 const forbidden = [
-  /@react-native-firebase/i, /getDevicePushTokenAsync/,
+  /@react-native-firebase/i, /expo-notifications/i, /getDevicePushTokenAsync/,
   /googleServicesFile/, /com\\.google\\.gms\\.google-services/,
   /com\\.google\\.firebase/, /ExpoFirebaseMessagingService/,
   /firebase_messaging_notification_delegation_enabled/,
@@ -31,6 +31,7 @@ const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
 assert.equal(android.package, "com.ultron.messenger");
 assert.equal(pkg.dependencies["@react-native-firebase/app"], undefined);
 assert.equal(pkg.dependencies["@react-native-firebase/messaging"], undefined);
+assert.equal(pkg.dependencies["expo-notifications"], undefined);
 const js = fs.readFileSync("src/config.js", "utf8");
 const native = fs.readFileSync("android/app/src/main/java/com/latticenetwork/pulse/WakeService.kt", "utf8");
 if (!js.includes("https://49.12.242.0")) errors.push("Default server does not target ULTRON");
