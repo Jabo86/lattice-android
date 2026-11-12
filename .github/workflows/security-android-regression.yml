@@ -1,0 +1,68 @@
+name: Security branch Android regression build
+on:
+  push:
+    branches: [security/dependabot-99]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.0'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0 ndk;27.1.12297006"
+      - name: Install audited dependency graph
+        run: |
+          npm ci --legacy-peer-deps --no-audit --no-fund
+          npm audit --audit-level=low
+      - name: Provide mock Firebase config for compilation ONLY
+        run: |
+          cat > android/app/google-services.json <<'JSON'
+          {
+            "project_info": {
+              "project_number": "123456789000",
+              "project_id": "ci-build-not-real",
+              "storage_bucket": "ci-build-not-real.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:123456789000:android:1234567890abcdef",
+                "android_client_info": {"package_name": "com.latticenetwork.pulse"}
+              },
+              "api_key": [{"current_key": "CI_DUMMY_KEY_NOT_FOR_REAL_PUSH"}]
+            }],
+            "configuration_version": "1"
+          }
+          JSON
+          cp android/app/google-services.json google-services.json
+          echo "This is an ephemeral fake config solely for CI compilation; notifications will NOT operate in this test build."
+      - name: Compile native Xray transport from source
+        env:
+          ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/27.1.12297006
+        run: |
+          export GOROOT="$(go env GOROOT)"
+          bash tools/build-libv2ray.sh "$GITHUB_WORKSPACE/third_party/libxray" "$GITHUB_WORKSPACE/android/app/libs/libv2ray.aar"
+      - name: Generate temporary debug signing key
+        run: |
+          keytool -genkeypair -keystore android/app/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 365 -storepass android -keypass android -dname "CN=Security CI debug,O=Not For Distribution,C=IT"
+      - name: Compile Android without publishing app
+        working-directory: android
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+      - name: Validate compiled APK
+        run: |
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t android/app/build/outputs/apk/debug/app-debug.apk | tail -1
+          echo "Debug APK compiled with mock Firebase configuration; DO NOT DISTRIBUTE"
