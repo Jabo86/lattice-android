@@ -63,5 +63,12 @@
     "autolinking": {
       "nativeModulesDir": "./modules"
     }
+  },
+  "overrides": {
+    "@expo/fingerprint": {
+      "glob": "14.0.5",
+      "minimatch": "11.0.8"
+    },
+    "image-size": "2.1.0"
   }
 }
