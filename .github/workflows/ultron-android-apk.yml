@@ -1,0 +1,51 @@
+name: ULTRON Android APK (verification)
+on:
+  push:
+    branches: [ultron/android-migration]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.26.0'
+      - uses: android-actions/setup-android@v3
+      - name: Android tools and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "ndk;27.1.12297006"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/27.1.12297006" >> "$GITHUB_ENV"
+      - name: Install JS dependencies
+        run: npm install --legacy-peer-deps --no-audit --no-fund
+      - name: Verify proprietary notification routing
+        run: node tools/verify-ultron-notifications.cjs
+      - name: Build native Xray AAR from checked-in source
+        run: bash tools/build-libv2ray.sh "$GITHUB_WORKSPACE/third_party/libxray" "$GITHUB_WORKSPACE/android/app/libs/libv2ray.aar"
+      - name: Generate temporary debug key (never a production signing key)
+        run: |
+          keytool -genkeypair -v -keystore android/app/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 365 -storepass android -keypass android -dname "CN=ULTRON debug,O=Development,C=IT"
+      - name: Compile Android debug APK
+        working-directory: android
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+      - name: Check APK exists
+        run: |
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          unzip -t android/app/build/outputs/apk/debug/app-debug.apk | tail -1
+          sha256sum android/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ULTRON-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
