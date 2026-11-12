@@ -89,7 +89,7 @@ android {
 
     namespace 'com.latticenetwork.pulse'
     defaultConfig {
-        applicationId 'com.latticenetwork.pulse'
+        applicationId 'com.ultron.messenger'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 183
@@ -208,4 +208,3 @@ dependencies {
     }
 }
 
-apply plugin: 'com.google.gms.google-services'
