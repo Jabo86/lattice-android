@@ -76,7 +76,7 @@ Messaggi, allegati, note vocali, chiamate/videochiamate e stati sono cifrati end
 - Identità di rete (LNS) e appartenenza aziendale, per instradare i messaggi.
 - Buste crittografate e metadati minimi di consegna (mittente/destinatario, orario) necessari alla consegna.
 - Chiavi pubbliche (ML-KEM, ML-DSA, X25519) per abilitare cifratura, firma e signaling anonimo.
-- Token di notifica push (FCM) per avvisarti di nuovi messaggi/chiamate.
+- Servizio notifiche proprietario ULTRON per avvisarti di nuovi messaggi/chiamate.
 - Indirizzo IP di rete delle richieste (log tecnici standard), non collegato al contenuto.
 
 4. COSA NON RACCOGLIAMO / NON VEDIAMO
@@ -116,7 +116,7 @@ Messages, attachments, voice notes, calls/video calls and status are end-to-end 
 - Network identity (LNS) and company membership, to route messages.
 - Encrypted envelopes and minimal delivery metadata (sender/recipient, time) needed for delivery.
 - Public keys (ML-KEM, ML-DSA, X25519) to enable encryption, signing and anonymous signaling.
-- Push notification tokens (FCM) to alert you of new messages/calls.
+- ULTRON server notifications to alert you of new messages/calls.
 - Network IP address of requests (standard technical logs), not linked to content.
 
 4. WHAT WE DO NOT COLLECT / CANNOT SEE
@@ -245,7 +245,7 @@ export default function SettingsScreen({ navigation }) {
   useEffect(() => { wake.isOn().then((v) => setWakeOn(!!v)).catch(() => {}); }, []);
 
   // Notifiche dal nostro server: il servizio nativo tiene aperta una connessione in attesa
-  // e Google viene coinvolto solo se quel servizio non risponde più.
+  // senza dipendere da Google o Firebase.
   const toggleWake = async (v) => {
     setWakeBusy(true);
     try {
@@ -384,16 +384,16 @@ export default function SettingsScreen({ navigation }) {
   };
   const toggleNotif = async (v) => {
     setNotif(v); await saveNotifPref(v);
-    if (v) { try { const tok = await registerForPush(); if (tok) { await api.registerPushToken(tok, Platform.OS); setPushOk(true); } else setPushOk(false); } catch { setPushOk(false); } }
+    if (v) { try { const ok = await registerForPush(); if (ok) await wake.enable(); setPushOk(!!ok); } catch { setPushOk(false); } } else { await wake.disable(); setWakeOn(false); setPushOk(false); }
   };
 
   // Stato reale delle notifiche su QUESTO dispositivo: permesso concesso + token registrato.
   const checkPush = async () => {
     setPushBusy(true);
     try {
-      const tok = await registerForPush();
-      if (tok) { await api.registerPushToken(tok, Platform.OS); setPushOk(true); }
-      else setPushOk(false);
+      const allowed = await registerForPush();
+      const active = await wake.isOn();
+      setPushOk(!!allowed && !!active);
     } catch { setPushOk(false); }
     finally { setPushBusy(false); }
   };
