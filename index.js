@@ -9,7 +9,7 @@ function reportBoot(stage, e) {
   BOOT_ERRORS.push(stage + ": " + msg);
   try { console.log("BOOT_ERROR", stage, msg); } catch (_) {}
   try {
-    fetch("https://lattice-network.it/api/public/crash", {
+    fetch("https://49.12.242.0/api/public/crash", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ v: "js", android: "boot:" + stage, trace: String(msg).slice(0, 5000) }),
@@ -72,11 +72,11 @@ async function showIncomingCall(notifee, K, data) {
         smallIcon: "notification_icon",
         color: "#22C55E",
         timeoutAfter: 35000,
-        fullScreenAction: { id: "incoming-call", launchActivity: "com.latticenetwork.pulse.MainActivity" },
-        pressAction: { id: "incoming-call", launchActivity: "com.latticenetwork.pulse.MainActivity" },
+        fullScreenAction: { id: "incoming-call", launchActivity: "com.ultron.messenger.MainActivity" },
+        pressAction: { id: "incoming-call", launchActivity: "com.ultron.messenger.MainActivity" },
         actions: [
-          { title: "Rispondi", pressAction: { id: "answer", launchActivity: "com.latticenetwork.pulse.MainActivity" } },
-          { title: "Rifiuta", pressAction: { id: "reject", launchActivity: "com.latticenetwork.pulse.MainActivity" } },
+          { title: "Rispondi", pressAction: { id: "answer", launchActivity: "com.ultron.messenger.MainActivity" } },
+          { title: "Rifiuta", pressAction: { id: "reject", launchActivity: "com.ultron.messenger.MainActivity" } },
         ],
       },
     });
@@ -84,7 +84,7 @@ async function showIncomingCall(notifee, K, data) {
     // di sistema (fallback anti-Doze) e non si sente un doppio suono.
     try {
       const AsyncStorage = require("@react-native-async-storage/async-storage").default;
-      const srv = (await AsyncStorage.getItem("lattice.pulse.server.v1")) || "https://lattice-network.it";
+      const srv = (await AsyncStorage.getItem("lattice.pulse.server.v1")) || "https://49.12.242.0";
       await fetch(srv.replace(/\/+$/, "") + "/api/public/pulse/call/ring-shown", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -96,32 +96,17 @@ async function showIncomingCall(notifee, K, data) {
   }
 }
 
-// 4) Notifiche in background (Firebase + notify-kit): tutto isolato.
+// 4) ULTRON: eventi locali; le notifiche arrivano da WakeService senza FCM.
 step("background-notifications", () => {
   const K = require("react-native-notify-kit");
-  const notifee = K.default;
-  const { getApp } = require("@react-native-firebase/app");
-  const { getMessaging, setBackgroundMessageHandler } = require("@react-native-firebase/messaging");
-
-  try {
-    const messaging = getMessaging(getApp());
-    setBackgroundMessageHandler(messaging, async (remoteMessage) => {
-      const data = (remoteMessage && remoteMessage.data) || {};
-      if (data.type === "call" && data.call_id) await showIncomingCall(notifee, K, data);
-    });
-  } catch (e) { reportBoot("fcm-bg-handler", e); }
-
-  // notify-kit richiede un background event handler registrato
-  // (il routing lo fa App con getInitialNotification).
-  notifee.onBackgroundEvent(async ({ type, detail }) => {
+  K.default.onBackgroundEvent(async ({ type, detail }) => {
     try {
       const aid = detail && detail.pressAction && detail.pressAction.id;
-      if (type === K.EventType.ACTION_PRESS && aid === "reject" && detail?.notification?.id) {
-        await notifee.cancelNotification(detail.notification.id);
-      } else if (type === K.EventType.PRESS && aid !== "answer" && detail?.notification?.id) {
-        await notifee.cancelNotification(detail.notification.id);
+      if ((type === K.EventType.ACTION_PRESS && aid === "reject") ||
+          (type === K.EventType.PRESS && aid !== "answer")) {
+        if (detail?.notification?.id) await K.default.cancelNotification(detail.notification.id);
       }
-    } catch (e) {}
+    } catch (_) {}
   });
 });
 
@@ -145,13 +130,13 @@ if (!Root) {
     return React.createElement(
       ScrollView,
       { style: { flex: 1, backgroundColor: "#080B12" }, contentContainerStyle: { padding: 24, paddingTop: 72 } },
-      React.createElement(Text, { style: { color: "#F87171", fontSize: 19, fontWeight: "800" } }, "Lattice non è riuscita ad avviarsi"),
+      React.createElement(Text, { style: { color: "#F87171", fontSize: 19, fontWeight: "800" } }, "ULTRON non è riuscita ad avviarsi"),
       React.createElement(Text, { style: { color: "#94A3B8", fontSize: 13, marginTop: 10 } },
         "L'errore è già stato mandato allo sviluppatore. Puoi anche condividerlo qui sotto."),
       React.createElement(
         Pressable,
         {
-          onPress: () => Share.share({ message: "Lattice avvio:\n" + txt.slice(0, 3000) }).catch(() => {}),
+          onPress: () => Share.share({ message: "ULTRON avvio:\n" + txt.slice(0, 3000) }).catch(() => {}),
           style: { marginTop: 18, backgroundColor: "#0066FF", paddingVertical: 12, borderRadius: 10, alignItems: "center" },
         },
         React.createElement(Text, { style: { color: "#fff", fontWeight: "800" } }, "Condividi il dettaglio")
