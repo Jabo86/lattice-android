@@ -85,7 +85,7 @@ export default function NotificationsScreen({ navigation }) {
             ))}
             <Text style={{ color: theme.textDim, fontSize: 12, marginTop: 8, lineHeight: 17 }}>
               {en
-                ? "If the alert does not appear on screen, Lattice does not have permission to show notifications: check it in the Android settings."
+                ? "If the alert does not appear on screen, ULTRON does not have permission to show notifications: check it in the Android settings."
                 : "Se l'avviso non compare a schermo, ULTRON non ha il permesso di mostrare notifiche: controllalo nelle impostazioni di Android."}
             </Text>
           </View>
