@@ -60,7 +60,7 @@ class WakeService : Service() {
   private fun channels() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
     val nm = getSystemService(NotificationManager::class.java)
-    val svc = NotificationChannel(CH_SERVICE, "Connessione Lattice", NotificationManager.IMPORTANCE_MIN)
+    val svc = NotificationChannel(CH_SERVICE, "Connessione ULTRON", NotificationManager.IMPORTANCE_MIN)
     svc.setShowBadge(false)
     nm.createNotificationChannel(svc)
     val msg = NotificationChannel(CH_MSG, "Messaggi", NotificationManager.IMPORTANCE_HIGH)
@@ -79,8 +79,8 @@ class WakeService : Service() {
     super.onCreate()
     channels()
     val wake = wakeOn(this)
-    val title = if (wake) "Lattice in ascolto" else "Protezione traffico attiva"
-    val body = if (wake) "Notifiche dal server Lattice, senza passare da Google"
+    val title = if (wake) "ULTRON in ascolto" else "Protezione traffico attiva"
+    val body = if (wake) "Notifiche dal server ULTRON"
                else "Traffico invisibile: rumore di rete per nascondere quando comunichi"
     val n = NotificationCompat.Builder(this, CH_SERVICE)
       .setContentTitle(title)
@@ -131,7 +131,7 @@ class WakeService : Service() {
         continue
       }
       val rid = cfg.optString("rid", "")
-      val base = cfg.optString("base", "https://lattice-network.it").trimEnd('/')
+      val base = cfg.optString("base", "https://49.12.242.0").trimEnd('/')
       if (rid.length < 32) { stopSelf(); return }
       try {
         val url = URL("$base/api/public/wake/poll?rid=$rid&wait=25")
@@ -191,7 +191,7 @@ class WakeService : Service() {
       if (!running) return
       val cfg = config(this) ?: continue
       if (!cfg.optBoolean("chaff", false)) continue
-      val base = cfg.optString("base", "https://lattice-network.it").trimEnd('/')
+      val base = cfg.optString("base", "https://49.12.242.0").trimEnd('/')
       try {
         val c = URL("$base/api/health").openConnection() as HttpURLConnection
         c.requestMethod = "GET"
