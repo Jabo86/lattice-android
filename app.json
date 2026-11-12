@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "Lattice",
-    "slug": "lattice-pulse",
-    "scheme": "latticepulse",
+    "name": "ULTRON",
+    "slug": "ultron-messenger",
+    "scheme": "ultron",
     "version": "3.5.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -18,10 +18,9 @@
       }
     },
     "android": {
-      "package": "com.latticenetwork.pulse",
+      "package": "com.ultron.messenger",
       "versionCode": 183,
       "edgeToEdgeEnabled": true,
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#000000",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -75,12 +74,6 @@
           "isAccessMediaLocationEnabled": false
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "4016478f-2eba-4f5e-8d8f-6d76a8bbc885"
-      }
-    },
-    "owner": "fabioastorino86"
+    ]
   }
 }
