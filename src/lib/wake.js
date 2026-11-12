@@ -3,6 +3,7 @@
 // e tiene aperta una connessione in attesa verso il nostro server. Il gettone (rid) è
 // casuale e non contiene la tua identità; il servizio non ha bisogno della chiave privata.
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { NativeModules } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import { randomHex } from "./crypto";
 import { DEFAULT_SERVER } from "../config";
@@ -40,6 +41,7 @@ export async function enable() {
   await api.wakeRegister(rid);
   await writeConfig(true, rid);
   await AsyncStorage.setItem(ON_KEY, "1");
+  if (NativeModules.WakeControl?.start) await NativeModules.WakeControl.start();
   return rid;
 }
 
@@ -58,5 +60,6 @@ export async function refresh() {
   if (!rid) return false;
   try { await api.wakeRegister(rid); } catch { /* riprova al prossimo avvio */ }
   await writeConfig(true, rid);
+  if (NativeModules.WakeControl?.start) await NativeModules.WakeControl.start();
   return true;
 }
