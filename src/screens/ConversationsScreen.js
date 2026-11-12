@@ -17,7 +17,7 @@ import { useTint } from "../lib/appearance";
 import { theme } from "../theme";
 import Avatar from "../components/Avatar";
 import TrialBanner from "../components/TrialBanner";
-import * as Notifications from "expo-notifications";
+
 import { generateGroupKey, wrapGroupKeyFor, bytesToHex, anonSharedSecret } from "../lib/crypto";
 import { discRid, anonEpochs, openInvite } from "../lib/anonCall";
 import { missedCallCount } from "../lib/store";
@@ -80,7 +80,7 @@ export default function ConversationsScreen({ navigation }) {
       if (mounted.current) setConvs(list);
       const total = list.reduce((n, c) => n + (c.unread || 0), 0);
       if (mounted.current) setTotalUnread(total);
-      try { await Notifications.setBadgeCountAsync(total); } catch {}
+      // Il conteggio interno resta disponibile; i badge launcher variano per dispositivo.
       try { const mc = await missedCallCount(); if (mounted.current) setMissedCalls(mc); } catch {}
     } catch { /* keep last */ }
     finally { if (mounted.current) setBooted(true); }
