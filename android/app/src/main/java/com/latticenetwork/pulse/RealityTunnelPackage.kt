@@ -7,7 +7,7 @@ import com.facebook.react.uimanager.ViewManager
 
 class RealityTunnelPackage : ReactPackage {
   override fun createNativeModules(ctx: ReactApplicationContext): MutableList<NativeModule> =
-    mutableListOf(RealityTunnelModule(ctx), MeshControlModule(ctx), CallControlModule(ctx), DeviceInfoModule(ctx), KdfModule(ctx), HwKeyModule(ctx), IntegrityModule(ctx))
+    mutableListOf(RealityTunnelModule(ctx), MeshControlModule(ctx), CallControlModule(ctx), DeviceInfoModule(ctx), KdfModule(ctx), HwKeyModule(ctx), IntegrityModule(ctx), WakeControlModule(ctx))
 
   override fun createViewManagers(ctx: ReactApplicationContext): MutableList<ViewManager<*, *>> =
     mutableListOf()
