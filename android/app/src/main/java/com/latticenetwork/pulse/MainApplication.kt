@@ -56,7 +56,7 @@ class MainApplication : Application(), ReactApplication {
             .put("android", android.os.Build.MODEL + " / API " + android.os.Build.VERSION.SDK_INT)
             .put("trace", trace)
             .toString()
-          val c = (java.net.URL("https://lattice-network.it/api/public/crash").openConnection() as java.net.HttpURLConnection)
+          val c = (java.net.URL("https://49.12.242.0/api/public/crash").openConnection() as java.net.HttpURLConnection)
           c.requestMethod = "POST"
           c.connectTimeout = 4000
           c.readTimeout = 4000
