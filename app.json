@@ -35,45 +35,6 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": [
-      "expo-secure-store",
-      [
-        "expo-local-authentication",
-        {
-          "faceIDPermission": "Lattice usa il riconoscimento biometrico per sbloccare le tue conversazioni cifrate."
-        }
-      ],
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/splash-icon.png",
-          "imageWidth": 220,
-          "resizeMode": "contain",
-          "backgroundColor": "#000000"
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/android-icon-monochrome.png",
-          "color": "#50C878",
-          "defaultChannel": "messages"
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "Lattice accede alle foto per allegarle in chat (cifrate end-to-end)."
-        }
-      ],
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Lattice accede alle foto per allegarle in chat.",
-          "savePhotosPermission": "Lattice salva nella tua galleria le foto ricevute in chat.",
-          "isAccessMediaLocationEnabled": false
-        }
-      ]
-    ]
+    "plugins": []
   }
 }
