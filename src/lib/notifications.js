@@ -1,9 +1,6 @@
 import * as Notifications from "expo-notifications";
-import * as Device from "expo-device";
-import Constants from "expo-constants";
 import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as api from "./api";
 import { isGhost, GHOST_CHANNEL } from "./ghost";
 
 // Foreground behaviour: show banner + list + sound even while the app is open.
@@ -53,7 +50,7 @@ export async function loadReminderTimes() {
 }
 
 // Programma il promemoria quiz giornaliero.
-// NB: da v1.0.76 il promemoria è un PUSH DAL SERVER (FCM) — affidabile anche con il
+// NB: da v1.0.76 il promemoria è un PUSH DAL SERVER (ULTRON) — affidabile anche con il
 // risparmio batteria aggressivo (Samsung/Xiaomi ecc.) che uccideva le notifiche LOCALI.
 // Salviamo gli orari + fuso orario sul server; lo scheduler backend invia la push.
 // arg: undefined → carica gli orari salvati; array di orari; oppure un singolo numero (ora).
@@ -64,7 +61,7 @@ export async function scheduleDailyQuizReminder(arg) {
     else if (typeof arg === "number") times = [{ hour: arg, minute: 0 }];
     else times = await loadReminderTimes();
     if (!times.length) times = [{ hour: 19, minute: 0 }];
-    // Assicura il canale Android (serve alla push FCM su channel "reminders").
+    // Assicura il canale Android (serve alla push ULTRON su channel "reminders").
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("reminders", {
         name: "Promemoria",
@@ -95,55 +92,29 @@ export async function cancelDailyQuizReminder() {
   try { await api.disableQuizReminder(); } catch { /* */ }
 }
 
+// Solo notifiche locali e servizio ULTRON WakeService: nessun token ULTRON.
 export async function registerForPush() {
-  if (!Device.isDevice) return null; // no push on simulators
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("messages", {
-      name: "Messaggi",
-      importance: Notifications.AndroidImportance.MAX,
-      sound: "default",
-      vibrationPattern: [0, 250, 250, 250],
-      enableVibrate: true,
-      showBadge: true,
-      bypassDnd: false,
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      lightColor: "#50C878",
+      name: "Messaggi ULTRON", importance: Notifications.AndroidImportance.MAX,
+      sound: "default", vibrationPattern: [0, 250, 250, 250],
+      enableVibrate: true, showBadge: true,
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PRIVATE,
     });
-    // Canale delle notifiche fantasma: il server lo usa per i dispositivi che hanno
-    // attivato l'opzione. Importanza MIN + visibilità SECRET = nessun suono, nessuna
-    // vibrazione, niente sulla schermata di blocco.
     await Notifications.setNotificationChannelAsync(GHOST_CHANNEL, {
-      name: "Silenzioso",
-      importance: Notifications.AndroidImportance.MIN,
-      sound: null,
-      enableVibrate: false,
-      showBadge: true,
+      name: "Silenzioso", importance: Notifications.AndroidImportance.MIN,
+      sound: null, enableVibrate: false, showBadge: true,
       lockscreenVisibility: Notifications.AndroidNotificationVisibility.SECRET,
     });
     await Notifications.setNotificationChannelAsync("calls", {
-      name: "Chiamate",
-      importance: Notifications.AndroidImportance.MAX,
-      sound: "default",
-      vibrationPattern: [0, 400, 200, 400],
-      enableVibrate: true,
-      showBadge: true,
-      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
-      lightColor: "#22C55E",
+      name: "Chiamate", importance: Notifications.AndroidImportance.MAX,
+      sound: "default", enableVibrate: true,
+      lockscreenVisibility: Notifications.AndroidNotificationVisibility.PRIVATE,
     });
   }
   const { status: existing } = await Notifications.getPermissionsAsync();
-  let status = existing;
-  if (existing !== "granted") {
-    const r = await Notifications.requestPermissionsAsync();
-    status = r.status;
-  }
-  if (status !== "granted") return null;
-  // Token NATIVO FCM (getDevicePushTokenAsync) → invio push diretto via FCM HTTP v1 dal
-  // backend sovrano, senza dipendere dal servizio push di Expo. Su Android data = token FCM.
-  try {
-    const tok = await Notifications.getDevicePushTokenAsync();
-    return tok?.data ? String(tok.data) : null;
-  } catch {
-    return null; // richiede un build nativo con google-services.json (già presente)
-  }
+  const status = existing === "granted" ? existing :
+    (await Notifications.requestPermissionsAsync()).status;
+  // Il gettone di sveglia viene generato e registrato dal modulo wake.js.
+  return status === "granted";
 }
