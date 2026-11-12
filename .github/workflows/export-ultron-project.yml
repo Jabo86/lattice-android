@@ -1,0 +1,45 @@
+name: Export independent ULTRON Android project
+on:
+  push:
+    branches: [ultron/android-migration]
+    paths:
+      - '.github/workflows/export-ultron-project.yml'
+      - 'ULTRON_PROJECT.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify independence and stage project copy
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist/ULTRON-Android
+          tar --exclude='.git' --exclude='dist' --exclude='node_modules' --exclude='google-services.json' --exclude='android/app/google-services.json' -cf - . | tar -xf - -C dist/ULTRON-Android
+          test -f dist/ULTRON-Android/package.json
+          test -f dist/ULTRON-Android/android/app/build.gradle
+          test -f dist/ULTRON-Android/src/lib/wake.js
+          test -f dist/ULTRON-Android/tools/verify-ultron-notifications.cjs
+          if grep -R -n -E '@react-native-firebase|expo-notifications|googleServicesFile' dist/ULTRON-Android/App.js dist/ULTRON-Android/package.json dist/ULTRON-Android/app.json; then
+            echo 'Unexpected proprietary-push dependency detected.'
+            exit 1
+          fi
+          echo 'Independent source snapshot, no original Lattice .git history' > dist/ULTRON-Android/SOURCE_ORIGIN.txt
+          echo 'Origin: Jabo86/lattice-android, branch ultron/android-migration' >> dist/ULTRON-Android/SOURCE_ORIGIN.txt
+          echo 'This is the independent ULTRON source tree. Do not merge it back into Lattice.' >> dist/ULTRON-Android/SOURCE_ORIGIN.txt
+          (cd dist && zip -qr ULTRON_ANDROID_SOURCE.zip ULTRON-Android)
+          unzip -t dist/ULTRON_ANDROID_SOURCE.zip | tail -1
+          sha256sum dist/ULTRON_ANDROID_SOURCE.zip
+          echo "Files: $(find dist/ULTRON-Android -type f | wc -l)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ULTRON_ANDROID_SOURCE_INDEPENDENT
+          path: dist/ULTRON_ANDROID_SOURCE.zip
+          if-no-files-found: error
+          retention-days: 30
