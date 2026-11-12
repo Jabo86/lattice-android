@@ -35,7 +35,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package-lock.json
-          if test -f yarn.lock; then git rm yarn.lock; fi
+          if test -f yarn.lock; then git rm -f yarn.lock; fi
           if ! git diff --cached --quiet; then
             git commit -m "security: sync audited npm lockfile; drop stale Yarn advisory source"
             git push origin HEAD:ultron/android-migration
