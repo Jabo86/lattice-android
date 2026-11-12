@@ -1,0 +1,54 @@
+name: Security-only Dependabot remediation
+on:
+  push:
+    branches: [security/dependabot-99]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'yarn.lock'
+      - '.github/workflows/dependabot-security-fix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Count reported dependency vulnerabilities
+        run: |
+          npm audit --json --package-lock-only > audit-before.json || true
+          node -e 'let j=require("./audit-before.json"); console.log("BEFORE:",JSON.stringify(j.metadata?.vulnerabilities));'
+      - name: Update lockfile without major framework upgrades
+        run: |
+          npm install --package-lock-only --legacy-peer-deps --no-audit --no-fund
+          npm audit fix --package-lock-only --legacy-peer-deps --no-audit --no-fund || true
+          npm audit --json --package-lock-only > audit-after.json || true
+          node -e 'let j=require("./audit-after.json"); console.log("AFTER:",JSON.stringify(j.metadata?.vulnerabilities)); console.log("REMAINING:",Object.keys(j.vulnerabilities||{}).join(","));'
+      - name: Keep patched npm lock only on separate security branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if test -f yarn.lock; then git rm -f yarn.lock; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "security: refresh audited dependency lock and eliminate obsolete Yarn lock"
+            git push origin HEAD:security/dependabot-99
+          fi
+      - name: Verify a clean installation and zero known npm advisories
+        run: |
+          npm ci --legacy-peer-deps --no-fund --no-audit
+          npm audit --audit-level=low
+          npx expo config --type public --json > expo-config.json
+          node -e 'let j=require("./expo-config.json"); if(!j.android?.package) process.exit(2); console.log("Expo configuration valid, Android ID:",j.android.package)'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dependabot-security-audit
+          path: |
+            audit-before.json
+            audit-after.json
+          if-no-files-found: error
